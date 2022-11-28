@@ -32,7 +32,7 @@
 
 <script setup lang="ts">
 import { onMounted, onUpdated, ref } from 'vue';
-import { usePostStore } from '../store';
+import { usePostStore } from '../../store';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 const router = useRouter()

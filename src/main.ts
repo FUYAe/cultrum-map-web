@@ -1,10 +1,14 @@
+import '@/style/style.scss'
+import "@/style/animation.scss"
+import App from '@/App.vue'
 import { createApp } from 'vue'
-import './style.scss'
-import { router } from "./router"
-import { pinia } from "./store"
-import App from './App.vue'
-import plugin from './plugin'
-// import ElementPlus from 'element-plus'
+import { router } from "@/router"
+import { pinia } from "@/store"
+import { plugin } from '@/plugin'
 import 'element-plus/dist/index.css'
 import '@wangeditor/editor/dist/css/style.css'
-createApp(App).use(router).use(pinia).use(plugin).mount('#app')
+const app = createApp(App)
+app.use(router)
+app.use(pinia)
+app.use(plugin)
+app.mount('#app')

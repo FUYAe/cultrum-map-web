@@ -153,3 +153,6 @@ body,#app{
 ::-webkit-scrollbar{
   display: none;
 }
+.icon:focus{
+  outline: none;
+}

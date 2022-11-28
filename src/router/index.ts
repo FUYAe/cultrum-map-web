@@ -1,19 +1,21 @@
 import { createRouter, createWebHistory, createWebHashHistory } from "vue-router"
 import type { RouteRecordRaw } from "vue-router"
 import { useStore, pinia } from "../store"
-import { request } from "../axios"
-import { tr } from "element-plus/es/locale"
+
 const routes: RouteRecordRaw[] = [
   {
     path: "/", component: () => import("../views/Home.vue"), redirect: "/mapecharts", children: [
-      { path: "/amap", component: () => import("../views/AMap.vue") },
-      { path: "/mapecharts", component: () => import("../views/MapEcharts.vue") },
+      { path: "/amap", name: "amap", component: () => import("../views/pages/AMap.vue") },
+      { path: "/mapecharts", name: "mapecharts", component: () => import("../views/pages/MapEcharts.vue") },
     ]
   },
-  { path: "/editor", component: () => import("../views/Editor.vue") },
-  { path: "/post", component: () => import("../views/Post.vue") },
-  { path: "/previewpost", component: () => import("../views/PreviewPost.vue") },
-  { path: "/error", component: () => import("../views/Error.vue") },
+  { path: "/editor", name: "editor", component: () => import("../views/editor/Editor.vue") },
+  {
+    path: "/info", name: "info", component: () => import("../views/pages/InfoWrapper.vue"), children: [
+      { path: "/post", name: "post", component: () => import("../views/pages/Post.vue") },
+      { path: "/previewpost", name: "previewpost", component: () => import("../views/editor/PreviewPost.vue") },
+    ]
+  },
   { path: "/:catchAll(.*)", component: () => import("../views/Error.vue") },
 ]
 
@@ -21,9 +23,10 @@ const router = createRouter({
   history: createWebHashHistory(),
   routes
 })
-router.beforeEach((to, from) => {
+router.beforeEach((to, from, next) => {
   const store = useStore(pinia)
-  store.handleBrief(false)
+  store.isShowBrief = false
+  next()
 
 })
 export { router }

@@ -41,139 +41,113 @@
 import { onMounted, shallowRef, ref, onUpdated, reactive, toRefs, watch } from "vue"
 import AMapLoader from '@amap/amap-jsapi-loader';
 import "@amap/amap-jsapi-types";
-import locpng from "../assets/location.png"
-import { useStore } from "../store";
+import locpng from "@/assets/location.png"
+import { useStore } from "@/store";
 
 const map = shallowRef(null as unknown as AMap.Map);
-const ThisMap = ref({} as any)
-const isShowCurrentTraffic = ref(false)
-const checkList = ref(["bg", "point", "building", "road"])
-const isShowAmapControl = ref(false)
+const thisAMap = ref({} as any)
 const store = useStore()
 const controlConfig = reactive({
-  showSatellite: false
+  showSatellite: false,
+  isShowAmapControl: false,
+  isShowCurrentTraffic: false,
+  checkList: ["bg", "point", "building", "road"]
 })
-const { showSatellite } = toRefs(controlConfig)
+const { showSatellite, isShowAmapControl, isShowCurrentTraffic, checkList } = toRefs(controlConfig)
 const showLoading = ref(true)
-const mapOpt: AMap.MapOptions & { terrain?: boolean } = {
-  // viewMode: "3D",
+const mapOptions: AMap.MapOptions & { terrain?: boolean } = {
   zooms: [7, 18],
   zoom: 12,
   center: [112.95, 28.19],
   pitch: 60,
   cacheSize: 7,
-  // terrain: true,
   mapStyle: 'amap://styles/fresh',
   features: ['bg', 'road', 'building', 'point']
 }
-async function initMap() {
-  try {
-    const AMap = await AMapLoader.load({
-      key: "a5653ec1767fc1db8bfdb91789e95b64",
-      version: "2.0",
-      plugins: ['AMap.DistrictSearch']
+async function initAMap() {
+  const AMap = await AMapLoader.load({
+    key: "a5653ec1767fc1db8bfdb91789e95b64",
+    version: "2.0",
+    plugins: ['AMap.DistrictSearch']
+  });
+  thisAMap.value = AMap;
+  let district: any = null;
+  if (!district) {
+    district = new AMap.DistrictSearch({
+      extensions: 'all',
+      level: 'province'
     });
-    ThisMap.value = AMap;
-    var district: any = null;
-    function drawBounds() {
-      if (!district) {
-        district = new AMap.DistrictSearch({
-          // subdistrict: 0,  
-          extensions: 'all',
-          level: 'province'
-        });
-      }
-      district.search("湖南省", function (status: any, result: any) {
-        var bounds = result.districtList[0].boundaries;
-        var mask = [];
-        for (var i = 0; i < bounds.length; i += 1) {
-          mask.push([bounds[i]]);
-        }
-        map.value = new AMap.Map('map', {
-          mask: mask,
-          ...mapOpt
-        });
-        map.value.on('complete', function () {
-          showLoading.value = false
-        })
-
-        var icon = new AMap.Icon({
-          size: new AMap.Size(30, 30),    // 图标尺寸
-          image: locpng,  // Icon的图像
-          // 图像相对展示区域的偏移量，适于雪碧图等
-          imageSize: new AMap.Size(30, 30)   // 根据所设置的大小拉伸或压缩图片
-        });
-        for (let s of store.scatter) {
-          (new AMap.Marker({
-            map: map.value,
-            position: new AMap.LngLat(s.value[0], s.value[1]),
-            icon: icon,
-            title: s.name,
-            extData: s
-          })).on('click', (params: any) => {
-            store.handleBrief(true, params.target._originOpts.extData.index, { offsetX: params.pixel.x, offsetY: params.pixel.y })
-
-          })
-        }
-        map.value.on('click', (e) => {
-          store.handleBrief(false)
-        });
-        AMap.plugin(['AMap.ToolBar',
-          'AMap.Scale',
-          'AMap.HawkEye',
-          'AMap.MapType',
-          'AMap.Geolocation'], function () {
-
-            // 在图面添加工具条控件，工具条控件集成了缩放、平移、定位等功能按钮在内的组合控件
-            // map.value.addControl(new AMap.ToolBar());
-
-            // 在图面添加比例尺控件，展示地图在当前层级和纬度下的比例尺
-            map.value.addControl(new AMap.Scale());
-
-            // 在图面添加鹰眼控件，在地图右下角显示地图的缩略图
-            // map.value.addControl(new AMap.HawkEye({ isOpen: true }));
-
-            // 在图面添加类别切换控件，实现默认图层与卫星图、实施交通图层之间切换的控制
-            // map.value.addControl(new AMap.MapType({ position: { top: 0, right: 0 } }));
-
-            // 在图面添加定位控件，用来获取和展示用户主机所在的经纬度位置
-            map.value.addControl(new AMap.Geolocation());
-          });
-
-      });
-    }
-    drawBounds();
-    return AMap;
-  } catch (e) {
-    console.log(e);
   }
+
+  district.search("湖南省", function (status: any, result: any) {
+    let bounds = result.districtList[0].boundaries;
+    let mask = [];
+    for (let i = 0; i < bounds.length; i += 1) {
+      mask.push([bounds[i]]);
+    }
+    map.value = new AMap.Map('map', {
+      mask: mask,
+      ...mapOptions
+    });
+    map.value.on('complete', function () {
+      showLoading.value = false
+    })
+
+    let icon = new AMap.Icon({
+      size: new AMap.Size(30, 30),
+      image: locpng,
+      imageSize: new AMap.Size(30, 30)
+    });
+    for (let s of store.scatter) {
+      // console.log("1");
+      (new AMap.Marker({
+        map: map.value,
+        position: new AMap.LngLat(s.value[0], s.value[1]),
+        icon: icon,
+        title: s.name,
+        extData: s
+      })).on('click', (params: any) => {
+        store.handleBrief(true, params.target._originOpts.extData.index, { offsetX: params.pixel.x, offsetY: params.pixel.y })
+
+      })
+    }
+    map.value.on('click', (e) => {
+      store.handleBrief(false)
+    });
+    AMap.plugin(['AMap.ToolBar',
+      'AMap.Scale',
+      'AMap.Geolocation'], function () {
+        map.value.addControl(new AMap.Scale());
+        map.value.addControl(new AMap.Geolocation());
+      });
+
+  });
+
+
+  return AMap;
+
 }
 
 onMounted(async () => {
   if (store.post_lights.length == 0) {
     await store.load_post_lights()
-    const AMap = await initMap()
+    await initAMap()
     addWatch()
   } else {
-    const AMap = await initMap()
+    await initAMap()
     addWatch()
   }
-
-
-
 })
-onUpdated(() => {
-  console.log("更新了")
-})
+
 let satellite!: any
 let currentTraffic: any
 const changeMa = (isShow: boolean) => {
-  satellite = satellite || new ThisMap.value.TileLayer.Satellite()
+  satellite = satellite || new thisAMap.value.TileLayer.Satellite()
   isShow && map.value.add(satellite);
   (!isShow) && map.value.remove(satellite)
 }
 const changeTra = () => {
-  currentTraffic = currentTraffic || new ThisMap.value.TileLayer.Traffic({
+  currentTraffic = currentTraffic || new thisAMap.value.TileLayer.Traffic({
     zIndex: 10,
     zooms: [7, 22],
   });
@@ -202,20 +176,6 @@ const addWatch = () => {
 </script>
 
 <style lang="scss" scoped>
-.slide-fade-enter-active {
-  transition: all 0.3s ease-out;
-}
-
-.slide-fade-leave-active {
-  transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1);
-}
-
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-  transform: translateX(200px);
-  opacity: 0;
-}
-
 .container {
 
   width: 100%;

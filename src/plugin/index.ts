@@ -1,7 +1,5 @@
 import type { App } from "vue"
-import { } from "vue-router"
-import { router } from "../router"
-export default {
+export const plugin = {
   install(app: App) {
     app.directive("back", {
       created(el, binding, vnode, prevVnode) {

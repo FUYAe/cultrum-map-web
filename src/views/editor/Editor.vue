@@ -58,9 +58,9 @@
 import '@wangeditor/editor/dist/css/style.css' // 引入 css
 import { onBeforeUnmount, ref, shallowRef, onMounted, reactive } from 'vue'
 import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
-import { usePostStore } from "../store"
+import { usePostStore } from "../../store"
 import { useRouter } from "vue-router"
-import { request } from '../axios'
+import { request } from '../../axios'
 import { ElMessage, ElMessageBox, MessageHandler } from 'element-plus'
 import { storeToRefs } from 'pinia'
 
@@ -214,7 +214,7 @@ const submit = async () => {
 }
 const look = () => {
   router.push({
-    path: "/previewpost"
+    name: "previewpost"
   })
 }
 const clear = () => {

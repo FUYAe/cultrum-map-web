@@ -7,14 +7,16 @@
               d="M753.365333 843.861333a64 64 0 0 0 90.496-90.496L602.496 512l241.365333-241.365333a64 64 0 0 0-90.496-90.496L512 421.504 270.634667 180.138667a64 64 0 1 0-90.496 90.496L421.504 512l-241.365333 241.365333a64 64 0 0 0 90.496 90.496L512 602.496l241.365333 241.365333z"
               p-id="3818" fill="#e0620d"></path>
           </svg></button></div>
-      <h4>{{ currentData && store.currentData.name }}</h4>
-      <div class="rate"><span>推荐指数</span>
-        <el-rate v-model="rate" disabled text-color="#ff9900" />
+      <h4>{{ currentData && currentData.name }}</h4>
+      <div class="rate">
+        <el-rate class="el-rate" v-model="rate" disabled text-color="#ff9900" />
       </div>
+      <div>{{ currentData && currentData.fee }}</div>
+      <div>{{ currentData && currentData.opentime }}</div>
       <div class="brief">
-        <span>{{ currentData && store.currentData.brief }}</span>
+        <span>{{ currentData && currentData.brief }}</span>
       </div>
-      <img :src="currentData && store.currentData.imgs[0].url1" draggable="false" class="img brief-img" alt="">
+      <img :src="currentData && currentData.imgs[0].url1" draggable="false" class="img brief-img" alt="">
       <el-button class="info" style="width:100px" @click="gotoDetail" type="info" plain bg>详情</el-button>
     </div>
   </Teleport>
@@ -22,7 +24,7 @@
 
 <script setup lang="ts">
 import { onMounted, onUpdated, onUnmounted, ref, watch } from 'vue';
-import { useStore } from '../store';
+import { useStore } from '@/store';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 const store = useStore()
@@ -44,7 +46,7 @@ watch(currentData, () => {
 const gotoDetail = () => {
 
   router.push({
-    path: "/post",
+    name: "post",
   })
 }
 const close = () => {
@@ -147,7 +149,11 @@ onUnmounted(() => {
   position: fixed;
   z-index: 1000;
   display: grid;
-  grid-template-rows: 10px 20px 40px 70px auto 30px;
+  grid-template-rows: 10px 20px 20px 20px 20px 50px auto 30px;
+
+  >div {
+    font-size: 13px;
+  }
 
   .close {
     text-align: right;
@@ -158,12 +164,22 @@ onUnmounted(() => {
   }
 
   .rate {
-    height: 40px;
-    padding: 6px 0;
+
+    // height: 40px;
+    // padding: 6px 0;
     // vertical-align: top;
-    vertical-align: baseline;
+    // vertical-align: baseline;
+    >span {
+      display: inline-block;
+      padding: 5px;
+    }
 
+  }
 
+  .el-rate {
+    display: inline-flex;
+    align-items: center;
+    height: 20px;
   }
 
   >h4 {
